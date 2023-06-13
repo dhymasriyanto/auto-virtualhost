@@ -16,35 +16,35 @@ domainAvailable=$availableSites$domain.conf
 ### Checking Up isRoot user and not given domain name
 
 if [ "$(whoami)" != 'root' ]; then
-	echo -e $"\nYou dont have permission to run this script please login as root with sudo -s or use sudo.\n"
-		exit 1;
+        echo -e $"\nYou dont have permission to run this script please login as root with sudo -s or use sudo.\n"
+        exit 1;
 fi
 
 if [ "$action" != 'create' ] && [ "$action" != 'delete' ] && [ "$action" != 'list' ]
-	then
-		echo -e $"\nPlease Use create or delete or list as action.\n"
-		exit 1;
+then
+        echo -e $"\nPlease Use create or delete or list as action.\n"
+        exit 1;
 fi
 if [ "$action" == 'list' ]
-	then
-		echo -e $"\n********************\n"
-		### command for list
-		# a2query -s
-                basename  /etc/httpd/conf/extra/sites-available/*.conf .conf
-		echo -e $"\n********************\n"
-		exit;
+then
+        echo -e $"\n********************\n"
+        ### command for list
+        # a2query -s
+        basename  /etc/httpd/conf/extra/sites-available/*.conf .conf
+        echo -e $"\n********************\n"
+        exit;
 fi
 while [ "$domain" == '' ]; do
-	echo -e $"Please give a domain name like nayeem.test or web.dev :"
-	read domain
+        echo -e $"Please give a domain name like nayeem.test or web.dev :"
+        read domain
 done
 
 if [ "$action" == 'create' ]; then
-                ### check if domain already exists
-                if [ -e $domainAvailable ]; then
-                        echo -e $"\nHey, this domain is already exist in host please retry with new one.\n"
-                        exit;
-                fi
+        ### check if domain already exists
+        if [ -e $domainAvailable ]; then
+                echo -e $"\nHey, this domain is already exist in host please retry with new one.\n"
+                exit;
+        fi
 
                 ### checking up directory is exist if not then create one with permison
                 if ! [ -d $rootDir ]; then
@@ -54,7 +54,7 @@ if [ "$action" == 'create' ]; then
 
                 ### Creating virtual host conf file with rules
                 if ! echo "
-                <VirtualHost *:80>
+                        <VirtualHost *:80>
                         ServerAdmin $email
                         ServerName $domain
                         ServerAlias $domain
@@ -63,14 +63,14 @@ if [ "$action" == 'create' ]; then
                         LogLevel error
                         CustomLog /var/log/httpd/$domain-access.log combined
                         <Directory />
-                                AllowOverride All
+                        AllowOverride All
                         </Directory>
                         <Directory $rootDir>
-                                Options Indexes FollowSymLinks MultiViews
-                                AllowOverride all
-                                Require all granted
+                        Options Indexes FollowSymLinks MultiViews
+                        AllowOverride all
+                        Require all granted
                         </Directory>
-                </VirtualHost>" > $domainAvailable
+                        </VirtualHost>" > $domainAvailable
                 then
                         echo -e $"\nOooops!! Something went wrong to create $domain host please retry.\n"
                         exit;
@@ -96,27 +96,27 @@ if [ "$action" == 'create' ]; then
                 exit;
         else
                 ### check whether domain already exists
-		if ! [ -e $domainAvailable ]; then
-			echo -e $"\nThe domain name you provide is not exist in host please use an existing domain.\n"
-			exit;
-		else
-			### Delete domain in /etc/hosts
-			newhost=${domain//./\\.}
+                if ! [ -e $domainAvailable ]; then
+                        echo -e $"\nThe domain name you provide is not exist in host please use an existing domain.\n"
+                        exit;
+                else
+                        ### Delete domain in /etc/hosts
+                        newhost=${domain//./\\.}
 
-			sed -i "/$newhost/d" /etc/hosts
+                        sed -i "/$newhost/d" /etc/hosts
 
-			### disable website
-			# a2dissite $domain
+      ### disable website
+      # a2dissite $domain
 
-			### restart Apache
-			# /etc/init.d/apache2 reload
-                        systemctl restart httpd.service
+      ### restart Apache
+      # /etc/init.d/apache2 reload
+      systemctl restart httpd.service
 
-			### Delete virtual host rules files
-			rm $domainAvailable
-		fi
-		### show the finished message
-		echo -e $"\n*************** Your Domain deleted with host and disabled site. ***************\n"
-		exit 0;
-fi
+      ### Delete virtual host rules files
+      rm $domainAvailable
+                fi
+                ### show the finished message
+                echo -e $"\n*************** Your Domain deleted with host and disabled site. ***************\n"
+                exit 0;
+                fi
 
